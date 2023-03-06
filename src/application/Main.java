@@ -1,34 +1,48 @@
 package application;
 
 import db.DB;
+import exceptions.DbException;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Main {
     public static void main(String[] args) {
 
-        Connection conn = DB.getConnection();
-        Statement st = null;
-        ResultSet rt = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        Connection conn = null;
+        PreparedStatement prepSt = null;
 
         try {
-            st = conn.createStatement();
+            conn = DB.getConnection();
 
-            rt = st.executeQuery("SELECT * FROM department");
+            prepSt = conn.prepareStatement("INSERT INTO seller " +
+                    "(name, email, birthdate, basesalary, departmentid) " +
+                    "VALUES " +
+                    "(?,?,?,?,?)");
 
-            while (rt.next()) {
-                System.out.println(rt.getInt("id") + "," + rt.getString("name"));
-            }
+            prepSt.setString(1, "Felipe Sousa");
+            prepSt.setString(2, "felipesouls@gmail.com");
+            prepSt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.parse("09/05/1994 00:00", formatter)));
+            prepSt.setDouble(4, 3000.00);
+            prepSt.setInt(5, 4);
+
+            int rowsAffected = prepSt.executeUpdate();
+
+            System.out.println("Done! Row affected: " + rowsAffected);
 
         } catch (SQLException e) {
-
+            throw new DbException(e.getMessage());
         } finally {
-            DB.closeStatement(st);
-            DB.closeResultSet(rt);
+            DB.closeStatement(prepSt);
             DB.closeConnection();
         }
+
+
     }
 }
