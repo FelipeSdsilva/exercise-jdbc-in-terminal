@@ -4,8 +4,8 @@ import db.DB;
 import exceptions.DbIntegrityException;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.format.DateTimeFormatter;
 
 public class Main {
@@ -14,29 +14,40 @@ public class Main {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         Connection conn = null;
-        PreparedStatement prepSt = null;
+        Statement st = null;
 
         try {
             conn = DB.getConnection();
 
-            prepSt = conn.prepareStatement("DELETE FROM department " +
-                    "WHERE " +
-                    "id =  ?");
+            conn.setAutoCommit(false);
 
-            prepSt.setInt(1, 5);
+            st = conn.createStatement();
 
-            int rowsAffected = prepSt.executeUpdate();
+            int row1 = st.executeUpdate("UPDATE seller SET basesalary =  2090 WHERE departmentid = 1");
 
-            if (rowsAffected > 0) {
-                System.out.println(rowsAffected);
-            } else {
-                System.out.println("No rows affected!");
-            }
+            //  int x = 1;
+
+            //    if (x < 2) {
+            //         throw new SQLException("Fake error");
+            //  }
+
+            int row2 = st.executeUpdate("UPDATE seller SET basesalary = 3090 WHERE departmentid =  2");
+
+            conn.commit();
+
+            System.out.println("Row1: " + row1 + "\n"
+                    + "Row2: " + row2);
 
         } catch (SQLException e) {
-            throw new DbIntegrityException(e.getMessage());
+            try {
+                conn.rollback();
+                throw new DbIntegrityException("Transactional rollback! caused by: " + e.getMessage());
+            } catch (SQLException ex) {
+
+            }
+
         } finally {
-            DB.closeStatement(prepSt);
+            DB.closeStatement(st);
             DB.closeConnection();
         }
     }
