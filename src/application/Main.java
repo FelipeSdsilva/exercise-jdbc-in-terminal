@@ -38,7 +38,5 @@ public class Main {
             DB.closeStatement(prepSt);
             DB.closeConnection();
         }
-
-
     }
 }
