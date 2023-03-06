@@ -1,9 +1,11 @@
 package application;
 
 import db.DB;
-import exceptions.DbException;
+import exceptions.DbIntegrityException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 
 public class Main {
@@ -17,12 +19,11 @@ public class Main {
         try {
             conn = DB.getConnection();
 
-            prepSt = conn.prepareStatement("UPDATE seller " +
-                    "SET basesalary = basesalary + ? " +
-                    "WHERE departmentid = ?");
+            prepSt = conn.prepareStatement("DELETE FROM department " +
+                    "WHERE " +
+                    "id =  ?");
 
-            prepSt.setDouble(1, 2000.00);
-            prepSt.setInt(2, 2);
+            prepSt.setInt(1, 5);
 
             int rowsAffected = prepSt.executeUpdate();
 
@@ -33,7 +34,7 @@ public class Main {
             }
 
         } catch (SQLException e) {
-            throw new DbException(e.getMessage());
+            throw new DbIntegrityException(e.getMessage());
         } finally {
             DB.closeStatement(prepSt);
             DB.closeConnection();
